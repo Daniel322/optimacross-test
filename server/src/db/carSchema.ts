@@ -7,6 +7,8 @@ const carSchema = new mongoose.Schema({
   price: Number,
 });
 
+//TODO: update schema add required to fields
+
 const Car = mongoose.model('Car', carSchema);
 
 export default Car;

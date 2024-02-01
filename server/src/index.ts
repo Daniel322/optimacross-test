@@ -2,6 +2,7 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
+import bodyParser from "body-parser";
 import carsRouter from "./routes/cars.router";
 
 dotenv.config({ path: '.env' });
@@ -12,16 +13,20 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   
   try {
-    await mongoose.connect(process.env.DB_URL || 'mongodb://localhost:27017')
+    await mongoose.connect(process.env.DB_URL || 'mongodb://localhost:27017', {
+      "auth": {
+        "username": "mongo",
+        "password": "mongo" //TODO: add this variables to env
+      },
+    })
     
     console.log('[server]: mongodb connected')
   } catch (err) {
     console.log(err)
   }
-  
-  // app.get("/", (req: Request, res: Response) => {
-  //   res.send("Express + TypeScript Server");
-  // });
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
 
   app.use('/cars', carsRouter);
   

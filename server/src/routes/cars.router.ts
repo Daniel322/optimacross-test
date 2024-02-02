@@ -1,17 +1,18 @@
 import express, { Request, Response } from 'express';
 
-import Car from '../db/carSchema';
+import Car from '../db/car';
+import sessionChecker from '../middlewares/session.middleware';
 
 
 const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', sessionChecker, async (req: Request, res: Response) => {
   const cars = await Car.find({});
 
   res.status(200).send(cars);
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', sessionChecker, async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const currentCar = await Car.findById(id);
@@ -23,7 +24,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', sessionChecker, async (req: Request, res: Response) => {
   console.log(req.body);
 
   //TODO: add validate method for check fields
@@ -33,7 +34,7 @@ router.post('/', async (req: Request, res: Response) => {
   res.status(201).send(car);
 });
 
-router.patch('/:id', async (req: Request, res: Response) => {
+router.patch('/:id', sessionChecker,  async (req: Request, res: Response) => {
   const { params: { id }, body } = req;
 
   const updatedCar = await Car.findOneAndUpdate(
@@ -49,7 +50,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', sessionChecker, async (req: Request, res: Response) => {
   const { params: { id } } = req;
 
   await Car.deleteOne({ _id: id });

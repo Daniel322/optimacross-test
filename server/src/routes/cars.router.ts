@@ -1,21 +1,38 @@
 import express, { Request, Response } from 'express';
 
-import Car from '../db/car';
-import sessionChecker from '../middlewares/session.middleware';
+import authMiddleware from '../middlewares/auth.middleware';
+
+import { CarsService, SortFlow, SortType } from '../services/cars.service';
+
+import { getListQuerySchema } from '../validationSchemas/cars.validation';
 
 
 const router = express.Router();
 
-router.get('/', sessionChecker, async (req: Request, res: Response) => {
-  const cars = await Car.find({});
+const carsService = new CarsService();
 
-  res.status(200).send(cars);
+router.get('/', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { brand, sort, sortType } = req.query;
+
+    getListQuerySchema.parse({ brand, sort, sortType });
+  
+    const cars = await carsService.getList({
+      brand: brand as string,
+      sort: sort as SortType,
+      sortType: sortType as SortFlow ?? 'asc',
+    });
+  
+    res.status(200).send(cars);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
-router.get('/:id', sessionChecker, async (req: Request, res: Response) => {
+router.get('/:id', authMiddleware, async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const currentCar = await Car.findById(id);
+  const currentCar = await carsService.getCurrentCar(id);
 
   if (!currentCar) {
     res.status(404).send('Current car not found');
@@ -24,24 +41,20 @@ router.get('/:id', sessionChecker, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/', sessionChecker, async (req: Request, res: Response) => {
-  console.log(req.body);
+router.post('/', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const car = await carsService.createCar({ ...req.body });
 
-  //TODO: add validate method for check fields
-
-  const car = await Car.create({ ...req.body });
-
-  res.status(201).send(car);
+    res.status(201).send(car);
+  } catch (error: unknown) {
+    res.status(400).send((error as Error)?.message ?? error);
+  }
 });
 
-router.patch('/:id', sessionChecker,  async (req: Request, res: Response) => {
+router.patch('/:id', authMiddleware,  async (req: Request, res: Response) => {
   const { params: { id }, body } = req;
 
-  const updatedCar = await Car.findOneAndUpdate(
-    { _id: id },
-    { ...body },
-    { returnDocument: 'after' },
-  );
+  const updatedCar = await carsService.updateCar(id, body);
 
   if (!updatedCar) {
     res.status(404).send('Car with this id not found');
@@ -50,10 +63,10 @@ router.patch('/:id', sessionChecker,  async (req: Request, res: Response) => {
   }
 });
 
-router.delete('/:id', sessionChecker, async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
   const { params: { id } } = req;
 
-  await Car.deleteOne({ _id: id });
+  await carsService.deleteCar(id);
 
   res.status(200).send('success');
 });

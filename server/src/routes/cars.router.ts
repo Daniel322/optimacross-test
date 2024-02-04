@@ -5,6 +5,7 @@ import authMiddleware from '../middlewares/auth.middleware';
 import { CarsService, SortFlow, SortType } from '../services/cars.service';
 
 import { getListQuerySchema } from '../validationSchemas/cars.validation';
+import { extractErrorMessage } from '../utils';
 
 
 const router = express.Router();
@@ -16,11 +17,23 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const { brand, sort, sortType } = req.query;
 
     getListQuerySchema.parse({ brand, sort, sortType });
+
+    const sortOptions: Record<string, number> = {};
+
+    if (typeof sort === 'string') {
+      sortOptions[sort] = sortType === 'asc' ? 1 : -1;
+    }
+
+    const filterOptions: Record<string, string | object> = {};
+
+    if (typeof brand === 'string') {
+      filterOptions.brand = brand;
+    }
   
+
     const cars = await carsService.getList({
-      brand: brand as string,
-      sort: sort as SortType,
-      sortType: sortType as SortFlow ?? 'asc',
+      filterOptions,
+      sortOptions,
     });
   
     res.status(200).send(cars);
@@ -47,28 +60,42 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 
     res.status(201).send(car);
   } catch (error: unknown) {
-    res.status(400).send((error as Error)?.message ?? error);
+    res.status(400);
+    const message = extractErrorMessage(error);
+    if (message === 'Try again later') {
+      return res.send(error);
+    } else {
+      return res.send(message);
+    }
   }
 });
 
 router.patch('/:id', authMiddleware,  async (req: Request, res: Response) => {
-  const { params: { id }, body } = req;
+  try {
+    const { params: { id }, body } = req;
 
-  const updatedCar = await carsService.updateCar(id, body);
-
-  if (!updatedCar) {
-    res.status(404).send('Car with this id not found');
-  } else {
-    res.send(updatedCar);
+    const updatedCar = await carsService.updateCar(id, body);
+  
+    if (!updatedCar) {
+      res.status(404).send('Car with this id not found');
+    } else {
+      res.send(updatedCar);
+    }
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
-  const { params: { id } } = req;
+  try {
+    const { params: { id } } = req;
 
-  await carsService.deleteCar(id);
+    await carsService.deleteCar(id);
 
-  res.status(200).send('success');
+    res.status(200).send('success');
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
 export default router;

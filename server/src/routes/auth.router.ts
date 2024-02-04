@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
-import { ZodError } from 'zod';
 
 import { AuthService } from '../services/auth.service';
 import { loginSchema } from '../validationSchemas/auth.validation';
+import { extractErrorMessage } from '../utils';
 
 const router = express.Router();
 
@@ -20,14 +20,16 @@ router.post('/login', async (req: Request, res: Response) => {
   
     res.send(userData);
   } catch (error: unknown) {
-    if ((error as Error | ZodError)?.message === 'invalid password') {
-      res.status(401);
-    } else if ((error as Error | ZodError)?.message === 'user not found') {
+    const message = extractErrorMessage(error);
+    if (message === 'Try again later') {
+      return res.status(400).send(error);
+    } else if (message === 'user not found') {
       res.status(404);
     } else {
       res.status(400);
     }
-    res.send((error as Error | ZodError)?.message ?? error);
+
+    return res.send(message);
   }
 });
 
@@ -39,7 +41,12 @@ router.post('/signup', async (req: Request, res: Response) => {
   
     res.send(userData);
   } catch (error: unknown) {
-    res.status(400).send((error as Error)?.message ?? error);
+    const message = extractErrorMessage(error);
+    if (message === 'Try again later') {
+      return res.status(400).send(error);
+    } else {
+      return res.status(400).send(message);
+    }
   }
 });
 

@@ -28,6 +28,7 @@ const carSchema = new mongoose.Schema({
   },
   yearOfCreated: { type: Number, required: true },
   price: { type: Number, required: true },
+  __v: { type: Number, select: false },
 });
 
 const Car = mongoose.model('Car', carSchema);

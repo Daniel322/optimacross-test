@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import Car, { CarType } from '../db/car';
 
 export type SortType = keyof Omit<CarType, 'brand'>;
@@ -5,26 +6,18 @@ export type SortType = keyof Omit<CarType, 'brand'>;
 export type SortFlow = 'asc' | 'desc';
 
 type GetListProps = {
-  brand: string;
-  sort?: SortType;
-  sortType?: SortFlow
+  filterOptions: {
+    brand?: string;
+    name?: string;
+    price?: string | object;
+    yearOfCreated?: string | object;
+  },
+  sortOptions: Partial<Record<keyof CarType, 1 | -1>>,
 }
 
 export class CarsService {
-  constructor() {}
-
-  async getList({ brand, sort, sortType }: GetListProps): Promise<CarType[]> {
-    const sortOptions: Partial<Record<keyof CarType, 1 | -1>> = {};
-
-    if (sort) {
-      sortOptions[sort] = 1; //default ASC
-    }
-
-    if (sort && sortType && sortType === 'desc') {
-      sortOptions[sort] = -1;
-    }
-
-    return Car.find({ brand }).sort(sortOptions);
+  async getList({ filterOptions, sortOptions }: GetListProps): Promise<CarType[]> {
+    return Car.find(filterOptions).sort(sortOptions);
   }
 
   async getCurrentCar(id: string): Promise<CarType | null> {

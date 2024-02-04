@@ -1,5 +1,5 @@
-import { FilterQuery } from 'mongoose';
-import Car, { CarType } from '../db/car';
+import { Document, PaginateOptions, PaginateResult } from 'mongoose';
+import Car, { CarType, CarDocument } from '../db/car';
 
 export type SortType = keyof Omit<CarType, 'brand'>;
 
@@ -13,11 +13,19 @@ type GetListProps = {
     yearOfCreated?: string | object;
   },
   sortOptions: Partial<Record<keyof CarType, 1 | -1>>,
+  offset?: number,
+  limit?: number;
 }
 
 export class CarsService {
-  async getList({ filterOptions, sortOptions }: GetListProps): Promise<CarType[]> {
-    return Car.find(filterOptions).sort(sortOptions);
+  async getList({
+    filterOptions,
+    sortOptions,
+    offset,
+    limit,
+  }: GetListProps)
+  : Promise<PaginateResult<Document<CarDocument, PaginateOptions>>> {
+    return Car.paginate(filterOptions, { sort: sortOptions, offset, limit });
   }
 
   async getCurrentCar(id: string): Promise<CarType | null> {

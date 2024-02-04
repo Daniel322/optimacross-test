@@ -14,9 +14,21 @@ const carsService = new CarsService();
 
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { brand, sort, sortType } = req.query;
+    const {
+      brand,
+      limit,
+      offset,
+      sort,
+      sortType,
+    } = req.query;
 
-    getListQuerySchema.parse({ brand, sort, sortType });
+    getListQuerySchema.parse({
+      brand,
+      limit,
+      offset,
+      sort,
+      sortType,
+    });
 
     const sortOptions: Record<string, number> = {};
 
@@ -34,6 +46,8 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const cars = await carsService.getList({
       filterOptions,
       sortOptions,
+      limit: Number(limit),
+      offset: Number(offset),
     });
   
     res.status(200).send(cars);

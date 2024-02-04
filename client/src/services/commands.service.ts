@@ -8,20 +8,26 @@ import {
 } from '../utils';
 
 export class CommandsService {
-  private userToken: string | null;
-
-  constructor() {
-    this.userToken = null;
-  }
+  private userToken: string | null = null;
 
   help(): void {
     console.log(`
       ${chalk.green('list of available commands')}:
       - ${chalk.green('signup')} with arguments: -${chalk.green('email')}=value(${chalk.red('required')}), -${chalk.green('password')}=value(${chalk.red('required')})
+
       - ${chalk.green('login')} with arguments: -${chalk.green('email')}=value(${chalk.red('required')}), -${chalk.green('password')}=value(${chalk.red('required')})
-      - ${chalk.green('get cars')} with arguments: -${chalk.green('brand')}=value(${chalk.red('required')}) -${chalk.green('sort')}=name | price | yearOfCreated(optional) -${chalk.green('sortType')}=asc | desc(optional)
+
+      - ${chalk.green('get cars')} with arguments:
+        -${chalk.green('brand')}=value(${chalk.red('required')})
+        -${chalk.green('limit')}=value(${chalk.red('required')})
+        -${chalk.green('offset')}=value(${chalk.red('required')})
+        -${chalk.green('sort')}=name | price | yearOfCreated(optional)
+        -${chalk.green('sortType')}=asc | desc(optional)
+
       - ${chalk.green('create car')} with arguments(${chalk.red('all required')}): -${chalk.green('brand')} -${chalk.green('name')} -${chalk.green('price')} -${chalk.green('yearOfCreated')}
+
       - ${chalk.green('update car')} with optional arguments like in create car method and also 1 argument: -${chalk.green('id')}=value(${chalk.red('required')})
+
       - ${chalk.green('delete car')} with arguments: -${chalk.green('id')}=value(${chalk.red('required')})
     `);
   }
@@ -42,7 +48,6 @@ export class CommandsService {
   
       console.log(chalk.green('user created, now you can login'));
       console.table(data);
-      return;
     } catch (error: unknown) {
       extractErrorMessage(error);
     }
@@ -65,7 +70,6 @@ export class CommandsService {
       this.userToken = headers.token;
   
       console.log(chalk.green(`welcome, ${data.email}`));
-      return;
     } catch (error: unknown) {
       extractErrorMessage(error);
     }
@@ -90,8 +94,13 @@ export class CommandsService {
         },
       );
   
-      console.table(data);
-      return;
+      console.log(`
+        ${chalk.green('Total docs:')} ${data.totalDocs}
+        ${chalk.green('Total pages:')} ${data.totalPages}
+        ${chalk.green('Next page:')} ${data.hasNextPage ? `Set offset to ${data.offset + data.limit}` : `Last page`}
+        ${chalk.green('Prev page:')} ${data.hasPrevPage ? `Set offset to ${data.offset - data.limit}` : `First page`}
+      `);
+      console.table(data.docs);
     } catch (error: unknown) {
       extractErrorMessage(error);
     }
@@ -122,7 +131,6 @@ export class CommandsService {
       
       console.log('car was created!');
       console.table(data);
-      return;
     } catch (error: unknown) {
       extractErrorMessage(error);
     }
@@ -153,7 +161,6 @@ export class CommandsService {
 
       console.log(chalk.green('car was updated!'));
       console.table(data);
-      return;
     } catch (error) {
       extractErrorMessage(error);
     }
@@ -179,7 +186,6 @@ export class CommandsService {
       );
 
       console.log(chalk.green(`car, ${id}, was deleted!`));
-      return;
     } catch (error) {
       extractErrorMessage(error);
     }

@@ -1,11 +1,14 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, PaginateModel } from "mongoose";
+import mongoosePaginate from 'mongoose-paginate-v2'
 
-export interface CarType extends Document {
+export interface CarType {
   brand: string;
   name: string;
   yearOfCreated: number;
   price: number;
 };
+
+export interface CarDocument extends Document, CarType {}
 
 const carSchemaStringValidator = (val: string) => val.length >= 2;
 
@@ -31,6 +34,8 @@ const carSchema = new mongoose.Schema({
   __v: { type: Number, select: false },
 });
 
-const Car = mongoose.model('Car', carSchema);
+carSchema.plugin(mongoosePaginate);
+
+const Car = mongoose.model<CarDocument, PaginateModel<CarDocument>>('Car', carSchema);
 
 export default Car;

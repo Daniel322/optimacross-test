@@ -42,7 +42,7 @@ export class CarsService {
 
   async updateCar(_id: string, data: Partial<CarType>): Promise<CarDocument | null> {
     try {
-      if (Object.values(data).some((elem) => elem === null || elem === 'null' )) {
+      if (Object.values(data).some((elem) => elem == null || elem === 'null' )) {
         throw new Error('dont set null values');
       }
       

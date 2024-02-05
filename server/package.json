@@ -7,7 +7,9 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,7 +23,6 @@
     "mongodb-memory-server": "^9.1.6",
     "mongoose": "^8.1.1",
     "mongoose-paginate-v2": "^1.8.0",
-    "supertest": "^6.3.4",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -32,6 +33,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.10.3",
     "@types/supertest": "^6.0.2",
+    "node-mocks-http": "^1.14.1",
     "nodemon": "^3.0.2",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",

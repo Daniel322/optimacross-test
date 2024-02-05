@@ -23,7 +23,7 @@ const brokenTestData = {
 describe('CarsService', () => {
   let carsService = new CarsService();
 
- beforeAll(async () => {
+beforeAll(async () => {
   await dbMock.connect();
 });
 

@@ -39,7 +39,6 @@ export class CarsController {
       if (typeof brand === 'string') {
         filterOptions.brand = brand;
       }
-    
   
       const cars = await this.carsService.getList({
         filterOptions,
@@ -48,17 +47,20 @@ export class CarsController {
         offset: Number(offset),
       });
     
-      res.status(200).send(cars);
+      res.status(200)
+      res.send(cars);
     } catch (error) {
-      res.status(400).send(error);
+      res.status(400);
+      res.send(error);
     }
   }
 
   async createCar(req: Request, res: Response) {
     try {
       const car = await this.carsService.createCar({ ...req.body });
-  
-      res.status(201).send(car);
+
+      res.status(201);
+      res.send(car);
     } catch (error: unknown) {
       res.status(400);
       const message = extractErrorMessage(error);
@@ -77,8 +79,11 @@ export class CarsController {
       const updatedCar = await this.carsService.updateCar(id, body);
     
       if (!updatedCar) {
-        res.status(404).send('Car with this id not found');
+        res.status(404);
+        res.send('Car with this id not found');
+        return;
       } else {
+        res.status(200);
         res.send(updatedCar);
       }
     } catch (error) {
@@ -98,12 +103,16 @@ export class CarsController {
   
       await this.carsService.deleteCar(id);
   
-      res.status(200).send('success');
+      res.status(200);
+      res.send('success');
     } catch (error) {
       res.status(400);
       const message = extractErrorMessage(error);
       if (message === 'Try again later') {
         return res.send(error);
+      } else if (message === 'car not found') {
+        res.status(404);
+        res.send(message);
       } else {
         return res.send(message);
       }

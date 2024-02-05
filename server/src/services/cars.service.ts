@@ -32,20 +32,36 @@ export class CarsService {
     return Car.findById(id);
   }
 
-  async createCar(data: CarType): Promise<CarType> {
-    return Car.create(data);
+  async createCar(data: CarType): Promise<CarDocument> {
+    try {
+      return Car.create(data);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  async updateCar(_id: string, data: Partial<CarType>): Promise<CarType | null> {
-    return Car.findOneAndUpdate(
-      { _id },
-      { ...data },
-      { returnDocument: 'after' },
-    );
+  async updateCar(_id: string, data: Partial<CarType>): Promise<CarDocument | null> {
+    try {
+      if (Object.values(data).some((elem) => elem === null || elem === 'null' )) {
+        throw new Error('dont set null values');
+      }
+      
+      return Car.findOneAndUpdate(
+        { _id },
+        { ...data },
+        { returnDocument: 'after' },
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async deleteCar(_id: string): Promise<string> {
-    await Car.deleteOne({ _id });
+    const result = await Car.findByIdAndDelete(_id);
+
+    if (result == null) {
+      throw new Error('car not found');
+    }
 
     return 'success';
   }
